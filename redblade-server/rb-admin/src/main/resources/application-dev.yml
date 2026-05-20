@@ -1,0 +1,24 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/redblade
+    username: postgres
+    password: shuailing9230
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+
+logging:
+  level:
+    com.redblade: debug
+
+rb:
+  init:
+    enabled: false
+    mode: create-if-not-exists

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/redblade-server/rb-admin/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redblade-server/rb-admin/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redblade-server/rb-auth/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redblade-server/rb-auth/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redblade-server/rb-common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redblade-server/rb-common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redblade-server/rb-database/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redblade-server/rb-database/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redblade-server/rb-framework/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redblade-server/rb-framework/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redblade-server/rb-i18n/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redblade-server/rb-i18n/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redblade-server/rb-init/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redblade-server/rb-init/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redblade-server/rb-model/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redblade-server/rb-model/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redblade-server/rb-system/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redblade-server/rb-system/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redblade-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redblade-server/src/main/resources" charset="UTF-8" />
+  </component>
+</project>

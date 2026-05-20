@@ -1,0 +1,52 @@
+# 数据库初始化专用配置
+# 通过 java -jar redblade-init.jar -db 启动
+
+spring:
+  application:
+    name: redblade-db-init
+
+  # 数据源配置（根据实际情况修改）
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/redblade
+    username: postgres
+    password: shuailing9230
+    hikari:
+      minimum-idle: 1
+      maximum-pool-size: 5
+
+  # Redis配置（初始化时不需要，但需要配置避免报错）
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+# MyBatis-Plus配置
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  type-aliases-package: com.redblade.**.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: delFlag
+      logic-delete-value: '1'
+      logic-not-delete-value: '0'
+
+# RedBlade初始化配置
+rb:
+  init:
+    enabled: true
+    mode: create-if-not-exists
+    database-type: postgresql
+    version-table: sys_init_version
+
+# 日志配置
+logging:
+  level:
+    root: info
+    com.redblade: debug
+  pattern:
+    console: "%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

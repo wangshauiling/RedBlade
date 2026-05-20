@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.redblade</groupId>
+        <artifactId>redblade-server</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>rb-model</artifactId>
+    <name>rb-model</name>
+    <description>Model驱动开发模块 - 核心引擎、通用CRUD、代码生成</description>
+
+    <dependencies>
+        <!-- 内部依赖 -->
+        <dependency>
+            <groupId>com.redblade</groupId>
+            <artifactId>rb-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.redblade</groupId>
+            <artifactId>rb-database</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.redblade</groupId>
+            <artifactId>rb-i18n</artifactId>
+        </dependency>
+
+        <!-- Spring Boot Web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- MyBatis-Plus -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+        </dependency>
+
+        <!-- POI Excel -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.5</version>
+        </dependency>
+    </dependencies>
+
+</project>
