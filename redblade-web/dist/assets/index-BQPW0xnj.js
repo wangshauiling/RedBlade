@@ -1,0 +1,1 @@
+import{_ as c,u as n,q as r,h as _,j as t,D as o,e as l}from"./index-BIpzP6t-.js";const d={},p={class:"menu-container"};function i(m,e){const s=n("el-empty"),a=n("el-card");return r(),_("div",p,[t(a,null,{header:o(()=>[...e[0]||(e[0]=[l("span",null,"菜单管理",-1)])]),default:o(()=>[t(s,{description:"功能开发中..."})]),_:1})])}const f=c(d,[["render",i]]);export{f as default};

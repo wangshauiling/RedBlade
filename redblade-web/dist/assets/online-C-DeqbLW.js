@@ -1,0 +1,1 @@
+import{m as t,l as e}from"./index-BIpzP6t-.js";function i(n){return t("/online/list",n)}function r(){return t("/online/count")}function u(n){return e(`/online/${n}`)}function s(n){return e("/online/batch",n)}export{i as a,u as b,r as g,s as k};

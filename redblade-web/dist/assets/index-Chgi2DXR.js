@@ -1,0 +1,1 @@
+import{_ as c,u as t,q as r,h as _,j as n,D as o,e as l}from"./index-BIpzP6t-.js";const d={},p={class:"dept-container"};function i(m,e){const s=t("el-empty"),a=t("el-card");return r(),_("div",p,[n(a,null,{header:o(()=>[...e[0]||(e[0]=[l("span",null,"部门管理",-1)])]),default:o(()=>[n(s,{description:"功能开发中..."})]),_:1})])}const u=c(d,[["render",i]]);export{u as default};

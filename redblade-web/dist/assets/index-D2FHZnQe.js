@@ -1,0 +1,1 @@
+import{_ as c,u as t,q as r,h as l,j as n,D as o,e as _}from"./index-BIpzP6t-.js";const d={},p={class:"role-container"};function i(m,e){const s=t("el-empty"),a=t("el-card");return r(),l("div",p,[n(a,null,{header:o(()=>[...e[0]||(e[0]=[_("span",null,"角色管理",-1)])]),default:o(()=>[n(s,{description:"功能开发中..."})]),_:1})])}const u=c(d,[["render",i]]);export{u as default};
