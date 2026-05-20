@@ -1,7 +1,9 @@
 package com.redblade.auth.service;
 
+import com.redblade.auth.domain.ChangePasswordRequest;
 import com.redblade.auth.domain.LoginRequest;
 import com.redblade.auth.domain.LoginResponse;
+import com.redblade.auth.domain.RegisterRequest;
 import com.redblade.auth.security.LoginUser;
 
 /**
@@ -29,6 +31,21 @@ public interface AuthService {
      * @return 新的登录响应
      */
     LoginResponse refresh(String refreshToken);
+
+    /**
+     * 注册
+     *
+     * @param request 注册请求
+     * @return 登录响应
+     */
+    LoginResponse register(RegisterRequest request);
+
+    /**
+     * 修改密码
+     *
+     * @param request 修改密码请求
+     */
+    void changePassword(ChangePasswordRequest request);
 
     /**
      * 获取当前登录用户

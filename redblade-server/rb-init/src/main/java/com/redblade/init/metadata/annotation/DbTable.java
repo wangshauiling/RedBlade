@@ -8,14 +8,16 @@ import java.lang.annotation.*;
  *
  * 使用示例：
  * <pre>
- * &#64;DbTable(name = "sys_user", comment = "用户表", version = 1)
- * public class SysUserTable extends BaseTableDefinition {
- *     &#64;Override
- *     protected void defineColumns() {
- *         column("org_code", DataType.VARCHAR, 50).primaryKey().comment("组织编码");
- *         column("user_id", DataType.BIGINT).primaryKey().autoIncrement().comment("用户ID");
+ * &#64;DbTable(name = "sys_user", comment = "用户表", version = 1, orgCode = true)
+ * public class SysUserTableDef extends TableDefinitionBuilder {
+ *     public SysUserTableDef() {
+ *         super("sys_user", "用户表");
+ *         orgCode();
+ *         column("user_code", DataType.VARCHAR, 50).primaryKey().comment("用户编码");
  *         column("username", DataType.VARCHAR, 50).nullable(false).comment("用户名");
+ *         column("password", DataType.VARCHAR, 100).nullable(false).comment("密码");
  *         ...
+ *         uniqueIndex("uk_org_username", "org_code", "username");
  *     }
  * }
  * </pre>

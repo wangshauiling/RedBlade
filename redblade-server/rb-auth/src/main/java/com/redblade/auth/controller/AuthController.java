@@ -1,8 +1,12 @@
 package com.redblade.auth.controller;
 
+import com.redblade.auth.domain.CaptchaResponse;
+import com.redblade.auth.domain.ChangePasswordRequest;
 import com.redblade.auth.domain.LoginRequest;
 import com.redblade.auth.domain.LoginResponse;
+import com.redblade.auth.domain.RegisterRequest;
 import com.redblade.auth.service.AuthService;
+import com.redblade.auth.service.CaptchaService;
 import com.redblade.common.domain.R;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,6 +26,17 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final CaptchaService captchaService;
+
+    /**
+     * 获取验证码
+     */
+    @Operation(summary = "获取验证码")
+    @GetMapping("/captcha")
+    public R<CaptchaResponse> getCaptcha() {
+        CaptchaResponse response = captchaService.generateCaptcha();
+        return R.ok(response);
+    }
 
     /**
      * 登录
@@ -30,6 +45,16 @@ public class AuthController {
     @PostMapping("/login")
     public R<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = authService.login(request);
+        return R.ok(response);
+    }
+
+    /**
+     * 注册
+     */
+    @Operation(summary = "用户注册")
+    @PostMapping("/register")
+    public R<LoginResponse> register(@Valid @RequestBody RegisterRequest request) {
+        LoginResponse response = authService.register(request);
         return R.ok(response);
     }
 
@@ -60,5 +85,15 @@ public class AuthController {
     @GetMapping("/userinfo")
     public R<?> getUserInfo() {
         return R.ok(authService.getCurrentUser());
+    }
+
+    /**
+     * 修改密码
+     */
+    @Operation(summary = "修改密码")
+    @PostMapping("/changePassword")
+    public R<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        authService.changePassword(request);
+        return R.ok();
     }
 }

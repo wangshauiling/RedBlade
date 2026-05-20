@@ -1,10 +1,13 @@
 package com.redblade.auth.service.impl;
 
+import com.redblade.auth.domain.ChangePasswordRequest;
 import com.redblade.auth.domain.LoginRequest;
 import com.redblade.auth.domain.LoginResponse;
+import com.redblade.auth.domain.RegisterRequest;
 import com.redblade.auth.jwt.JwtUtils;
 import com.redblade.auth.security.LoginUser;
 import com.redblade.auth.service.AuthService;
+import com.redblade.auth.service.CaptchaService;
 import com.redblade.common.constant.CacheConstants;
 import com.redblade.common.exception.BusinessException;
 import com.redblade.common.helper.MessageHelper;
@@ -19,6 +22,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -34,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final PasswordEncoder passwordEncoder;
     private final MessageHelper messageHelper;
+    private final CaptchaService captchaService;
 
     // Token 过期时间配置
     private static final long ACCESS_TOKEN_EXPIRATION = 7200; // 2小时（秒）
@@ -237,6 +242,98 @@ public class AuthServiceImpl implements AuthService {
     public String getCurrentOrgCode() {
         LoginUser user = getCurrentUser();
         return user != null ? user.getOrgCode() : null;
+    }
+
+    @Override
+    public LoginResponse register(RegisterRequest request) {
+        // 1. 验证码校验
+        if (captchaService.isCaptchaEnabled()) {
+            if (!captchaService.validateCaptcha(request.getCaptchaKey(), request.getCaptcha())) {
+                throw new BusinessException(messageHelper.get("captcha.error"));
+            }
+        }
+
+        // 2. 检查组织是否存在
+        String orgSql = "SELECT 1 FROM sys_org WHERE org_code = ? AND del_flag = '0'";
+        List<Map<String, Object>> orgList = jdbcTemplate.queryForList(orgSql, request.getOrgCode());
+        if (orgList.isEmpty()) {
+            throw new BusinessException(messageHelper.get("org.not.exist"));
+        }
+
+        // 3. 检查用户名是否已存在
+        String checkSql = "SELECT 1 FROM sys_user WHERE org_code = ? AND username = ? AND del_flag = '0'";
+        List<Map<String, Object>> existList = jdbcTemplate.queryForList(checkSql, request.getOrgCode(), request.getUsername());
+        if (!existList.isEmpty()) {
+            throw new BusinessException(messageHelper.get("user.username.exists"));
+        }
+
+        // 4. 生成用户编码
+        String userCode = generateUserCode();
+
+        // 5. 密码编码
+        String encodedPassword = encodePassword(request.getPassword());
+
+        // 6. 昵称默认值
+        String nickname = request.getNickname();
+        if (nickname == null || nickname.isEmpty()) {
+            nickname = request.getUsername();
+        }
+
+        // 7. 插入用户
+        String insertSql = "INSERT INTO sys_user (org_code, user_code, username, password, nickname, status, del_flag) " +
+                          "VALUES (?, ?, ?, ?, ?, '0', '0')";
+        jdbcTemplate.update(insertSql, request.getOrgCode(), userCode, request.getUsername(), encodedPassword, nickname);
+
+        log.info("用户注册成功: {} ({})", request.getUsername(), request.getOrgCode());
+
+        // 8. 自动登录
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setOrgCode(request.getOrgCode());
+        loginRequest.setUsername(request.getUsername());
+        loginRequest.setPassword(request.getPassword());
+
+        return login(loginRequest);
+    }
+
+    @Override
+    public void changePassword(ChangePasswordRequest request) {
+        LoginUser loginUser = getCurrentUser();
+        if (loginUser == null) {
+            throw new BusinessException(messageHelper.get("user.not.login"));
+        }
+
+        // 1. 查询当前用户密码
+        String sql = "SELECT password FROM sys_user WHERE user_code = ? AND org_code = ? AND del_flag = '0'";
+        List<Map<String, Object>> userList = jdbcTemplate.queryForList(sql, loginUser.getUserCode(), loginUser.getOrgCode());
+
+        if (userList.isEmpty()) {
+            throw new BusinessException(messageHelper.get("user.not.exist"));
+        }
+
+        // 2. 验证原密码
+        String storedPassword = (String) userList.get(0).get("password");
+        if (!validatePassword(request.getOldPassword(), storedPassword)) {
+            throw new BusinessException(messageHelper.get("user.old.password.error"));
+        }
+
+        // 3. 新密码不能与原密码相同
+        if (request.getOldPassword().equals(request.getNewPassword())) {
+            throw new BusinessException(messageHelper.get("user.password.same"));
+        }
+
+        // 4. 更新密码
+        String newEncodedPassword = encodePassword(request.getNewPassword());
+        String updateSql = "UPDATE sys_user SET password = ? WHERE user_code = ? AND org_code = ?";
+        jdbcTemplate.update(updateSql, newEncodedPassword, loginUser.getUserCode(), loginUser.getOrgCode());
+
+        log.info("用户修改密码成功: {}", loginUser.getUsername());
+    }
+
+    /**
+     * 生成用户编码
+     */
+    private String generateUserCode() {
+        return "U" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
     }
 
     /**
