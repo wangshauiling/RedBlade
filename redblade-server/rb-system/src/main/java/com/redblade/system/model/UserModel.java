@@ -10,9 +10,9 @@ import com.redblade.model.core.BaseModel;
 import com.redblade.system.entity.SysUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.Serializable;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,9 +42,6 @@ public class UserModel extends BaseModel<SysUser> {
     @Autowired
     private AuthService authService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
     @Override
     protected void beforeInsert(SysUser entity) {
         if (existsByUsername(entity.getOrgCode(), entity.getUsername())) {
@@ -55,7 +52,8 @@ public class UserModel extends BaseModel<SysUser> {
             throw new BusinessException(messageHelper.getAsFormat("user.email.exists", entity.getEmail()));
         }
 
-        entity.setPassword(passwordEncoder.encode(entity.getPassword()));
+        // Base64编码密码
+        entity.setPassword(encodePassword(entity.getPassword()));
 
         if (entity.getStatus() == null) {
             entity.setStatus("0");
@@ -82,7 +80,7 @@ public class UserModel extends BaseModel<SysUser> {
         if (entity.getPassword() == null || entity.getPassword().isEmpty()) {
             entity.setPassword(existing.getPassword());
         } else {
-            entity.setPassword(passwordEncoder.encode(entity.getPassword()));
+            entity.setPassword(encodePassword(entity.getPassword()));
         }
     }
 
@@ -110,7 +108,7 @@ public class UserModel extends BaseModel<SysUser> {
             throw new BusinessException(messageHelper.get("user.not.exist"));
         }
 
-        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPassword(encodePassword(newPassword));
         updateById(user);
 
         log.info("重置用户密码: {} ({})", user.getUsername(), user.getOrgCode());
@@ -193,5 +191,12 @@ public class UserModel extends BaseModel<SysUser> {
         params.put("orgCode", orgCode);
         params.put("email", email);
         return masterDaoHelper.hasData(sql, params);
+    }
+
+    /**
+     * Base64编码密码
+     */
+    private String encodePassword(String rawPassword) {
+        return Base64.getEncoder().encodeToString(rawPassword.getBytes());
     }
 }
