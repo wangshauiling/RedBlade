@@ -44,14 +44,28 @@ public class AuthServiceImpl implements AuthService {
     private static final long ACCESS_TOKEN_EXPIRATION = 7200; // 2小时（秒）
     private static final long REFRESH_TOKEN_EXPIRATION = 604800; // 7天（秒）
 
+    // 登录失败限制配置
+    private static final int MAX_LOGIN_FAIL_COUNT = 5; // 最大失败次数
+    private static final long LOGIN_LOCK_TIME = 30; // 锁定时间（分钟）
+
     @Override
     public LoginResponse login(LoginRequest request) {
+        String loginKey = request.getOrgCode() + ":" + request.getUsername();
+
+        // 0. 检查是否被锁定
+        String lockKey = CacheConstants.USER_LOCK_KEY + loginKey;
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(lockKey))) {
+            Long remainTime = redisTemplate.getExpire(lockKey, TimeUnit.MINUTES);
+            throw new BusinessException(messageHelper.getAsFormat("user.locked.wait", remainTime));
+        }
+
         // 1. 查询用户
         String sql = "SELECT user_code, username, password, nickname, status, org_code, dept_code " +
                      "FROM sys_user WHERE org_code = ? AND username = ? AND del_flag = '0'";
         List<Map<String, Object>> userList = jdbcTemplate.queryForList(sql, request.getOrgCode(), request.getUsername());
 
         if (userList.isEmpty()) {
+            recordLoginFail(loginKey);
             throw new BusinessException(messageHelper.get("user.not.exist"));
         }
         Map<String, Object> userMap = userList.get(0);
@@ -59,6 +73,7 @@ public class AuthServiceImpl implements AuthService {
         // 2. 验证密码（Base64编码）
         String encodedPassword = (String) userMap.get("password");
         if (!validatePassword(request.getPassword(), encodedPassword)) {
+            recordLoginFail(loginKey);
             throw new BusinessException(messageHelper.get("user.password.error"));
         }
 
@@ -67,6 +82,9 @@ public class AuthServiceImpl implements AuthService {
         if ("1".equals(status)) {
             throw new BusinessException(messageHelper.get("user.disabled"));
         }
+
+        // 登录成功，清除失败记录
+        clearLoginFailRecord(loginKey);
 
         String userCode = (String) userMap.get("user_code");
         String username = (String) userMap.get("username");
@@ -439,5 +457,36 @@ public class AuthServiceImpl implements AuthService {
      */
     public String encodePassword(String rawPassword) {
         return Base64.getEncoder().encodeToString(rawPassword.getBytes());
+    }
+
+    // ==================== 登录失败次数限制 ====================
+
+    /**
+     * 记录登录失败
+     */
+    private void recordLoginFail(String loginKey) {
+        String failKey = CacheConstants.LOGIN_FAIL_COUNT_KEY + loginKey;
+        Long failCount = redisTemplate.opsForValue().increment(failKey);
+        redisTemplate.expire(failKey, 24, TimeUnit.HOURS);
+
+        if (failCount != null && failCount >= MAX_LOGIN_FAIL_COUNT) {
+            // 锁定账户
+            String lockKey = CacheConstants.USER_LOCK_KEY + loginKey;
+            redisTemplate.opsForValue().set(lockKey, "1", LOGIN_LOCK_TIME, TimeUnit.MINUTES);
+            redisTemplate.delete(failKey);
+
+            log.warn("用户登录失败次数过多，已锁定: {} ({}分钟)", loginKey, LOGIN_LOCK_TIME);
+            throw new BusinessException(messageHelper.getAsFormat("user.locked.minutes", LOGIN_LOCK_TIME));
+        }
+
+        log.debug("登录失败: {} (第{}次)", loginKey, failCount);
+    }
+
+    /**
+     * 清除登录失败记录
+     */
+    private void clearLoginFailRecord(String loginKey) {
+        String failKey = CacheConstants.LOGIN_FAIL_COUNT_KEY + loginKey;
+        redisTemplate.delete(failKey);
     }
 }

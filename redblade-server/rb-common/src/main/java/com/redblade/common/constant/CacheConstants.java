@@ -34,4 +34,19 @@ public interface CacheConstants {
      * 用户菜单
      */
     String USER_MENU_KEY = PREFIX + "user:menu:";
+
+    /**
+     * 登录失败次数
+     */
+    String LOGIN_FAIL_COUNT_KEY = PREFIX + "login:fail:";
+
+    /**
+     * 用户锁定状态
+     */
+    String USER_LOCK_KEY = PREFIX + "user:lock:";
+
+    /**
+     * 在线用户列表
+     */
+    String ONLINE_USER_KEY = PREFIX + "online:user:";
 }

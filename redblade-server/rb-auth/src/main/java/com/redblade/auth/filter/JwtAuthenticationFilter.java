@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * JWT 认证过滤器
  * 从请求头获取 Token，验证并设置用户认证信息
+ * 支持滑动过期和Token刷新提醒
  */
 @Slf4j
 @Component
@@ -33,6 +34,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
+
+    /**
+     * Token刷新提醒阈值（秒）
+     * 当Token剩余有效期小于此值时，在响应头中提醒前端刷新
+     */
+    private static final long TOKEN_REFRESH_THRESHOLD = 600; // 10分钟
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -50,13 +57,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     LoginUser loginUser = (LoginUser) redisTemplate.opsForValue().get(cacheKey);
 
                     if (loginUser != null) {
-                        // 4. 刷新 Token 过期时间（滑动过期）
+                        // 4. 获取Token剩余有效期
+                        Long expireTime = redisTemplate.getExpire(cacheKey, TimeUnit.SECONDS);
+
+                        // 5. 刷新 Token 过期时间（滑动过期）
                         redisTemplate.expire(cacheKey, 2, TimeUnit.HOURS);
 
-                        // 5. 设置认证信息到 SecurityContext
+                        // 6. 设置认证信息到 SecurityContext
                         UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
                         SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                        // 7. 如果Token即将过期，在响应头中提醒前端刷新
+                        if (expireTime != null && expireTime < TOKEN_REFRESH_THRESHOLD) {
+                            response.setHeader("X-Token-Refresh-Needed", "true");
+                            response.setHeader("X-Token-Expires-In", String.valueOf(expireTime));
+                            log.debug("Token即将过期，提醒前端刷新: {} (剩余{}秒)", loginUser.getUsername(), expireTime);
+                        }
 
                         log.debug("用户认证成功: {} ({})", loginUser.getUsername(), loginUser.getOrgCode());
                     } else {

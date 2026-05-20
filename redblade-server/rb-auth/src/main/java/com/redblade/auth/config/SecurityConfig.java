@@ -35,6 +35,8 @@ public class SecurityConfig {
         "/auth/register",           // 注册
         "/auth/captcha",            // 验证码
         "/auth/refresh",            // 刷新Token
+        "/druid/**",                // Druid 监控
+        "/api/druid/**",            // Druid 监控 (API前缀)
         "/doc.html",                // Knife4j 文档
         "/swagger-ui.html",
         "/swagger-ui/**",
